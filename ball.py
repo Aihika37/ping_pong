@@ -16,11 +16,11 @@ class Ball:
         self.ball.goto(self.ball.xcor() + self.dx,self.ball.ycor() + self.dy)
 
     def bounce_y(self):
-        #after bouncing moving to the opposite side of screen in y direction
+        #after hitting wall moving to the opposite side of screen in y direction
         self.dy *= -1
 
     def bounce_x(self):
-        # after moving out of the screen , coming back
+        # after collision with paddle increasing speed and changing direction of x
         self.dx *= -1
         self.dx *= 1.05
         self.dy *= 1.05
@@ -57,8 +57,3 @@ class Ball:
         if self.ball.xcor() < -width // 2:
             return "AI"
         return None
-
-
-
-
-
