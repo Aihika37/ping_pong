@@ -1,50 +1,77 @@
-from turtle import Turtle,Screen
-from paddle import Paddle
+import turtle
 from ball import Ball
+from paddle import Paddle
+from ai import AI
 from scoreboard import Scoreboard
-import time
-ball=Ball()
-s=Scoreboard()
-screen=Screen()
-screen.title("MY PINGPOG GAME")
-screen.setup(width=800,height=600)
-screen.bgcolor("white")
-screen.tracer(0)
-r_paddle=Paddle()
-r_paddle.goto(350,0)
-l_paddle=Paddle()
-l_paddle.goto(-350,0)
-screen.listen()
-screen.onkey(r_paddle.go_up,"Up")
-screen.onkey(r_paddle.go_down,"Down")
-screen.onkey(l_paddle.go_up,"u")
-screen.onkey(l_paddle.go_down,"d")
-game_is_on=True
-while game_is_on:
-    time.sleep(ball.move_speed)
-    screen.update()
-    ball.move()
-    ball.detect_collisions()
-    if ball.distance(r_paddle) < 50 and ball.xcor() > 340:
-        ball.x_move *= -1
-        ball.move_speed*=0.9
-    if ball.distance(l_paddle) < 50 and ball.xcor() < -340:
-        ball.x_move *= -1
-        ball.move_speed*=0.9
-    if ball.xcor()>380:
-        ball.goto(0, 0)
-        ball.x_move = -10
-        ball.y_move = -10
-        ball.move_speed=0.1
-        s.l_score+=1
-        s.update_scoreboard()
-    elif ball.xcor()<-380:
-        ball.goto(0, 0)
-        ball.x_move = 10
-        ball.y_move = 10
-        ball.move_speed=0.1
-        s.r_score+=1
-        s.update_scoreboard()
+import menu
+
+#Screen setup
+wn = turtle.Screen()
+wn.title("Ping Pong AI")
+wn.bgcolor("black")
+wn.setup(width=900, height=500)
+wn.tracer(0)
+
+#Game state
+state = "MENU"
+
+#Intial Objects
+ball = None
+player = None
+ai = None
+ai_paddle = None
+scoreboard = None
+
+def start_game(diff, win):
+    global ball, player, ai, ai_paddle, scoreboard, state
+    # beginning of the game
+    state = "PLAYING"
+    ball = Ball()
+    scoreboard = Scoreboard(win)
+    player = Paddle(-400)
+    ai_paddle = Paddle(400)
+    ai = AI(ai_paddle, diff)
+    #setting moving controls
+    wn.listen()
+    wn.onkeypress(player.go_up, "Up")
+    wn.onkeypress(player.go_down, "Down")
+
+def update():
+    global state
+    if state == "PLAYING":
+        ball.move()
+        ai.move(ball, ai_paddle)
+        ball.check_collision(player, ai_paddle)
+        scorer = ball.check_score()
+        #adding points
+        if scorer == "PLAYER":
+            scoreboard.add_player_point()
+            ball.reset()
+        elif scorer == "AI":
+            scoreboard.add_ai_point()
+            ball.reset()
+        if scoreboard.check_win():
+            state = "GAME_OVER"
+
+    wn.update()
+    wn.ontimer(update, 20)
 
 
-screen.exitonclick()
+def main():
+    global state
+    #showing menu
+    menu_obj = menu.Menu(wn)
+    result = menu_obj.show()
+    if result is None:
+        return
+    difficulty, win_score = result
+    start_game(difficulty, win_score)
+    update()
+    wn.mainloop()
+
+
+def set_state(new_state):
+    global state
+    state = new_state
+
+main()
