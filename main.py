@@ -46,7 +46,7 @@ def update():
         #adding points
         if scorer == "PLAYER":
             scoreboard.add_player_point()
-            ball.reset()
+            ball.reset()#reseting ball when it moves out of screen
         elif scorer == "AI":
             scoreboard.add_ai_point()
             ball.reset()
